@@ -1,0 +1,87 @@
+page {
+  background: #f6f7f9;
+  color: #111827;
+  font-size: 32rpx;
+}
+
+.container {
+  padding: 32rpx;
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 28rpx;
+  box-shadow: 0 10rpx 30rpx rgba(17, 24, 39, 0.06);
+}
+
+.title {
+  font-size: 44rpx;
+  font-weight: 700;
+  margin-bottom: 18rpx;
+}
+
+.subtle {
+  color: #6b7280;
+  font-size: 28rpx;
+}
+
+.input {
+  height: 88rpx;
+  padding: 0 24rpx;
+  border-radius: 18rpx;
+  border: 2rpx solid #e5e7eb;
+  background: #fff;
+  margin-top: 16rpx;
+}
+
+.btn {
+  height: 92rpx;
+  border-radius: 18rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.btnPrimary {
+  background: #111827;
+  color: #ffffff;
+}
+
+.btnDanger {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+.row {
+  display: flex;
+  gap: 16rpx;
+  align-items: center;
+}
+
+.grow {
+  flex: 1;
+}
+
+.spacer16 {
+  height: 16rpx;
+}
+
+.spacer24 {
+  height: 24rpx;
+}
+
+.spacer32 {
+  height: 32rpx;
+}
+
+.listItem {
+  padding: 22rpx 0;
+  border-bottom: 2rpx solid #f3f4f6;
+}
+
+.listItem:last-child {
+  border-bottom: 0;
+}
+

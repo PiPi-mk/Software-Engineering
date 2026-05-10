@@ -1,0 +1,11 @@
+.card {
+  margin-top: 80rpx;
+}
+
+.link {
+  color: #2563eb;
+  font-size: 28rpx;
+  text-align: center;
+  text-decoration: underline;
+}
+

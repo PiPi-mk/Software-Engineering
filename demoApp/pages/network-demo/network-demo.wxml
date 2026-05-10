@@ -1,0 +1,18 @@
+<view class="container">
+  <view class="card">
+    <view class="title">wx.request 最小示例</view>
+    <view class="subtle">
+      先打开开发者工具的 Network 面板，再点下面按钮，观察请求与状态。
+    </view>
+
+    <view class="spacer24"></view>
+
+    <view class="btn btnPrimary" bindtap="onRequestOk">① 成功：httpbin.org/get</view>
+    <view class="spacer16"></view>
+    <view class="btn btnDanger" bindtap="onRequestFail">② 失败：无效域名（预期走 fail）</view>
+
+    <view class="spacer24"></view>
+    <view class="subtle">最近一次结果（同时会 console.log）：</view>
+    <view class="result">{{lastResult}}</view>
+  </view>
+</view>

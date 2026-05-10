@@ -1,0 +1,30 @@
+.miniBtn {
+  padding: 0 22rpx;
+  height: 76rpx;
+  border-radius: 16rpx;
+  font-size: 28rpx;
+}
+
+.todoText {
+  font-size: 34rpx;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.apiHint {
+  font-weight: 600;
+  color: #1d4ed8;
+}
+
+.apiErr {
+  color: #b91c1c;
+}
+
+.serverItem {
+  background: #eff6ff;
+  border-radius: 16rpx;
+  padding: 16rpx 20rpx;
+  margin-top: 12rpx;
+  border-bottom: 0;
+}
+

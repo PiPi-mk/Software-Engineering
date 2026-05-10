@@ -1,0 +1,51 @@
+<view class="container">
+  <view class="card">
+    <view class="row">
+      <view class="grow">
+        <view class="title">你好，{{nickname}}</view>
+        <view class="subtle">共 {{todos.length}} 条</view>
+      </view>
+      <view class="btn btnDanger miniBtn" bindtap="onLogout">退出</view>
+    </view>
+
+    <view class="spacer16"></view>
+    <view wx:if="{{serverApiError}}" class="subtle apiErr">{{serverApiError}}</view>
+
+    <view class="spacer24"></view>
+
+    <view class="row">
+      <input
+        class="input grow"
+        placeholder="输入待办内容，回车或点添加"
+        value="{{newText}}"
+        maxlength="100"
+        confirm-type="done"
+        bindinput="onNewTextInput"
+        bindconfirm="onAdd"
+      />
+      <view class="btn btnPrimary miniBtn" bindtap="onAdd">
+        {{loading ? "…" : "添加"}}
+      </view>
+    </view>
+
+    <view class="spacer24"></view>
+
+    <view wx:if="{{!serverApiError && todos.length === 0}}" class="subtle">
+      还没有待办，先添加一条吧。
+    </view>
+
+    <view wx:elif="{{!serverApiError}}">
+      <view wx:for="{{todos}}" wx:key="id" class="listItem serverItem">
+        <view class="row">
+          <view class="grow">
+            <view class="todoText">{{item.text}}</view>
+            <view class="subtle">创建于：{{item.createdAtText}}</view>
+          </view>
+          <view class="btn btnDanger miniBtn" data-id="{{item.id}}" bindtap="onDelete">
+            删除
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

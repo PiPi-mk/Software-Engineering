@@ -1,0 +1,35 @@
+<view class="container">
+  <view class="card">
+    <view class="title">记录本</view>
+    <view class="subtle">输入昵称和密码即可登录（新昵称会自动注册）</view>
+
+    <input
+      class="input"
+      placeholder="昵称（用于区分你的待办）"
+      value="{{nickname}}"
+      maxlength="20"
+      bindinput="onNicknameInput"
+    />
+    <input
+      class="input"
+      placeholder="密码"
+      password
+      value="{{password}}"
+      maxlength="50"
+      bindinput="onPasswordInput"
+    />
+
+    <view class="spacer24"></view>
+
+    <view class="btn btnPrimary" bindtap="onLogin">
+      {{loading ? "登录中..." : "登录"}}
+    </view>
+
+    <view class="spacer16"></view>
+    <view class="subtle">提示：点击登录会先发起演示用网络请求（见 README），再通过本地缓存完成登录</view>
+
+    <view class="spacer24"></view>
+    <view class="link" bindtap="goNetworkDemo">Network 面板练习（wx.request）</view>
+  </view>
+</view>
+
