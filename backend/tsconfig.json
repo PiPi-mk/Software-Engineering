@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",                // 编译成较新的 JS 版本，Node.js 完全支持
+    "module": "CommonJS",              // Node.js 标准的模块系统
+    "rootDir": "./src",                // 告诉 TS 咱们的代码都在 src 目录下
+    "outDir": "./dist",                // 编译后的 JS 文件统一放到 dist 目录
+    "strict": true,                    // 开启严格模式，有助于帮你排查潜在错误
+    "esModuleInterop": true,           // 允许咱们用 import express from 'express' 这种优雅的写法
+    "skipLibCheck": true,              // 跳过第三方库的类型检查，加快启动速度
+    "forceConsistentCasingInFileNames": true, // 强制文件名大小写一致
+    "resolveJsonModule": true          // 允许直接 import JSON 文件（后续可能会用到）
+  },
+  "include": ["src/**/*"],             // 只编译 src 文件夹下的内容
+  "exclude": ["node_modules", "dist"]  // 排除掉不需要编译的文件夹
+}
