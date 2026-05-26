@@ -20,6 +20,12 @@ const router = createRouter({
           component: () => import('../views/ApprovalWorkbench.vue'),
           meta: { title: '审批工作台' },
         },
+        {
+          path: '/process',
+          name: 'ProcessConfig',
+          component: () => import('../views/ProcessConfig.vue'),
+          meta: { title: '党团流程配置' },
+        },
       ],
     },
   ],

@@ -8,6 +8,7 @@ const route = useRoute()
 const menuItems = [
   { path: '/notice', title: '通知管理' },
   { path: '/approval', title: '审批工作台' },
+  { path: '/process', title: '党团流程配置' },
 ]
 
 function onMenuClick(path: string) {
