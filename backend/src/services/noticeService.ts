@@ -89,17 +89,15 @@ export class NoticeService {
 
     // 7. 管理端获取已读未读统计
     static async getNoticeStats(noticeId: string) {
-        const totalStudents = 2; // 一期根据规范，写死测试账号学生总数为 2 人 (student1, student2)
-        
+        // 真实动态统计系统内的总学生数
+        const countRes = await pool.query('SELECT COUNT(*)::int as total FROM student');
+        const totalStudents = countRes.rows[0].total || 0;
+    
         const sql = `SELECT COUNT(*)::int as read_count FROM notice_read WHERE notice_id = $1`;
         const result = await pool.query(sql, [noticeId]);
         const readCount = result.rows[0].read_count;
         const unreadCount = Math.max(0, totalStudents - readCount);
 
-        return {
-            total: totalStudents,
-            readCount,
-            unreadCount
-        };
+        return { total: totalStudents, readCount, unreadCount };
     }
 }
