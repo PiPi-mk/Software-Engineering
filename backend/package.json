@@ -2,9 +2,8 @@
   "name": "backend",
   "private": true,
   "version": "0.1.0",
-  "type": "module",
   "scripts": {
-    "dev": "node --enable-source-maps --loader ts-node/esm src/server.ts",
+    "dev": "node -r ts-node/register src/server.ts",
     "build": "tsc -p tsconfig.json",
     "start": "node --enable-source-maps dist/server.js"
   },
@@ -20,4 +19,3 @@
     "typescript": "~6.0.2"
   }
 }
-

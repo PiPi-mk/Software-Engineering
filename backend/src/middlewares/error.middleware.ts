@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express'
-import { fail } from '../utils/response.ts'
+import { fail } from '../utils/response'
 
 export function errorMiddleware(
   err: unknown,

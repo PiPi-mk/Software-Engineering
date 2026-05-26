@@ -1,7 +1,7 @@
 import cors from 'cors'
 import express from 'express'
-import { buildRoutes } from './routes/index.ts'
-import { errorMiddleware } from './middlewares/error.middleware.ts'
+import { buildRoutes } from './routes'
+import { errorMiddleware } from './middlewares/error.middleware'
 
 export function buildApp() {
   const app = express()

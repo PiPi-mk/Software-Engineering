@@ -1,5 +1,5 @@
-import { buildApp } from './app.ts'
-import { getPort } from './config/env.ts'
+import { buildApp } from './app'
+import { getPort } from './config/env'
 
 const app = buildApp()
 const port = getPort()
