@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express'
-import { fail } from '../utils/response'
+import { fail } from '../utils/response.ts'
 
 export function errorMiddleware(
   err: unknown,
@@ -9,4 +9,3 @@ export function errorMiddleware(
 ) {
   res.status(500).json(fail('internal error', 50001))
 }
-

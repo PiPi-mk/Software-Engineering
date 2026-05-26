@@ -1,7 +1,7 @@
 import cors from 'cors'
 import express from 'express'
-import { buildRoutes } from './routes'
-import { errorMiddleware } from './middlewares/error.middleware'
+import { buildRoutes } from './routes/index.ts'
+import { errorMiddleware } from './middlewares/error.middleware.ts'
 
 export function buildApp() {
   const app = express()
@@ -15,4 +15,3 @@ export function buildApp() {
 
   return app
 }
-

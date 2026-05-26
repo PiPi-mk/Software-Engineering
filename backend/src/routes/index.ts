@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { ok } from '../utils/response'
+import { ok } from '../utils/response.ts'
 
 export function buildRoutes() {
   const r = Router()
@@ -10,4 +10,3 @@ export function buildRoutes() {
 
   return r
 }
-
