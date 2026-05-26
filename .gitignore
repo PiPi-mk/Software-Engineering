@@ -1,3 +1,7 @@
 # AI 辅助配置文件（不上传远程）
 CLAUDE.md
 .claude/
+
+# 后端接口文档（不上传远程）
+api-*.md
+errors.md
