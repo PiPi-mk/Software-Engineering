@@ -26,6 +26,12 @@ const router = createRouter({
           component: () => import('../views/ProcessConfig.vue'),
           meta: { title: '党团流程配置' },
         },
+        {
+          path: '/import-export',
+          name: 'ImportExport',
+          component: () => import('../views/ImportExport.vue'),
+          meta: { title: '数据导入导出' },
+        },
       ],
     },
   ],
