@@ -13,8 +13,11 @@
 - [API v1：通知闭环](./api-v1-notice.md)
 - [错误码与返回规范](./errors.md)
 - [后端目录结构与约定](./backend-structure.md)
+- [验收脚本（闭环1）](./demo-script-phase1.md)
+- [测试账号与样例数据](./test-data.md)
+- [接口联调示例（curl/http）](./http-examples.md)
+- [集成日检查清单](./integration-checklist.md)
 
 ## 关联说明
 
 - 项目总体需求与模块范围：见 `docs/code-wiki/`（入口 [code-wiki/README.md](file:///workspace/docs/code-wiki/README.md)）
-
