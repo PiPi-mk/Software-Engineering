@@ -1,46 +1,58 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import type { ProcessStage, ProcessType, ProcessStatus, SystemRole } from '../types/process'
 
-// ========== 数据接口 ==========
-interface ProcessStage {
-  id: number
-  name: string
-  approverRole: string
-  remindRule: string
-  remindEnabled: boolean
-}
+// ========== 流程级配置 ==========
+const processType = ref<ProcessType>('入党')
+const processStatus = ref<ProcessStatus>('启用')
 
-// ========== 审批角色选项 ==========
-const roleOptions = ['党支部书记', '团委书记', '辅导员', '学院党委', '团委组织部', '学生会主席']
+const processTypeOptions: { label: string; value: ProcessType }[] = [
+  { label: '入党流程', value: '入党' },
+  { label: '入团流程', value: '入团' },
+]
 
-// ========== Mock 初始数据（2个默认阶段） ==========
+const roleOptions: { label: string; value: SystemRole }[] = [
+  { label: '管理员 (admin)', value: 'admin' },
+  { label: '学生 (student)', value: 'student' },
+]
+
+// ========== 阶段列表 ==========
 let nextId = 3
 const stageList = ref<ProcessStage[]>([
   {
-    id: 1,
-    name: '提交申请',
-    approverRole: '辅导员',
-    remindRule: '提交后24小时内处理',
-    remindEnabled: true,
+    id: 'stage_1',
+    processType: '入党',
+    stageOrder: 1,
+    name: '递交入党申请书',
+    description: '申请人向所在党支部递交手写入党申请书',
+    materials: ['入党申请书', '个人自传'],
+    deadline: 7,
+    ownerRole: 'student',
   },
   {
-    id: 2,
-    name: '支部审核',
-    approverRole: '党支部书记',
-    remindRule: '审核通过后通知下一阶段',
-    remindEnabled: true,
+    id: 'stage_2',
+    processType: '入党',
+    stageOrder: 2,
+    name: '党支部初审',
+    description: '党支部对申请材料进行初步审核',
+    materials: [],
+    deadline: 14,
+    ownerRole: 'admin',
   },
 ])
 
 // ========== 新增阶段 ==========
 function handleAddStage() {
   stageList.value.push({
-    id: nextId++,
+    id: `stage_${nextId++}`,
+    processType: processType.value,
+    stageOrder: stageList.value.length + 1,
     name: '',
-    approverRole: '',
-    remindRule: '',
-    remindEnabled: false,
+    description: '',
+    materials: [],
+    deadline: 7,
+    ownerRole: 'student',
   })
 }
 
@@ -53,38 +65,45 @@ function handleDeleteStage(index: number) {
   ElMessageBox.confirm('确定删除该阶段吗？', '提示', { type: 'warning' })
     .then(() => {
       stageList.value.splice(index, 1)
+      // 重排 stageOrder
+      stageList.value.forEach((s, i) => (s.stageOrder = i + 1))
       ElMessage.success('已删除')
     })
     .catch(() => {})
 }
 
+// ========== 材料输入辅助 ==========
+function handleAddMaterial(index: number) {
+  stageList.value[index].materials.push('')
+}
+
+function handleRemoveMaterial(stageIndex: number, matIndex: number) {
+  stageList.value[stageIndex].materials.splice(matIndex, 1)
+}
+
 // ========== 保存流程 ==========
 function handleSave() {
-  // 基本校验
   for (let i = 0; i < stageList.value.length; i++) {
     const stage = stageList.value[i]
     if (!stage.name.trim()) {
       ElMessage.warning(`第 ${i + 1} 个阶段的名称不能为空`)
       return
     }
-    if (!stage.approverRole) {
-      ElMessage.warning(`请为「${stage.name || `第 ${i + 1} 个阶段`}」选择审批角色`)
-      return
-    }
   }
 
-  // 组装输出 JSON
-  const output = stageList.value.map((stage, index) => ({
-    order: index + 1,
-    name: stage.name,
-    approverRole: stage.approverRole,
-    remindRule: stage.remindRule,
-    remindEnabled: stage.remindEnabled,
-  }))
+  const output = {
+    processType: processType.value,
+    status: processStatus.value,
+    version: 'v1.0',
+    stages: stageList.value.map((s) => ({
+      ...s,
+      materials: s.materials.filter((m) => m.trim() !== ''),
+    })),
+  }
 
-  console.log('========== 党团流程配置 JSON ==========')
+  console.log('========== 党团流程配置 JSON (对齐 process_def + process_stage) ==========')
   console.log(JSON.stringify(output, null, 2))
-  console.log('========================================')
+  console.log('========================================================================')
 
   ElMessage.success('流程已保存，请打开控制台查看完整 JSON 数据')
 }
@@ -93,7 +112,24 @@ function handleSave() {
 <template>
   <div class="process-page">
     <h2>党团流程配置</h2>
-    <p class="page-desc">配置党团事务（如入党申请、评优评先等）的审批流程阶段与提醒规则。</p>
+    <p class="page-desc">配置党团事务的审批流程阶段，数据结构对齐 process_def 与 process_stage 表。</p>
+
+    <!-- 流程级配置 -->
+    <el-card class="process-meta">
+      <el-form label-width="100px" inline>
+        <el-form-item label="流程类型">
+          <el-select v-model="processType" style="width: 160px">
+            <el-option v-for="opt in processTypeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="状态">
+          <el-select v-model="processStatus" style="width: 120px">
+            <el-option label="启用" value="启用" />
+            <el-option label="停用" value="停用" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+    </el-card>
 
     <!-- 流程阶段卡片列表 -->
     <div class="stage-list">
@@ -105,40 +141,39 @@ function handleSave() {
       >
         <template #header>
           <div class="card-header">
-            <span>阶段 {{ index + 1 }}</span>
-            <el-button
-              type="danger"
-              size="small"
-              text
-              @click="handleDeleteStage(index)"
-            >
-              删除
-            </el-button>
+            <span>阶段 {{ stage.stageOrder || index + 1 }}</span>
+            <el-button type="danger" size="small" text @click="handleDeleteStage(index)">删除</el-button>
           </div>
         </template>
 
         <el-form :model="stage" label-width="100px" label-position="left">
           <el-form-item label="阶段名称">
-            <el-input v-model="stage.name" placeholder="例如：提交申请、支部审核" />
+            <el-input v-model="stage.name" placeholder="例如：递交入党申请书" />
           </el-form-item>
 
-          <el-form-item label="审批角色">
-            <el-select v-model="stage.approverRole" placeholder="请选择审批角色" style="width: 100%">
-              <el-option
-                v-for="role in roleOptions"
-                :key="role"
-                :label="role"
-                :value="role"
-              />
+          <el-form-item label="阶段说明">
+            <el-input v-model="stage.description" type="textarea" :rows="2" placeholder="对该阶段的补充说明" />
+          </el-form-item>
+
+          <el-form-item label="负责人角色">
+            <el-select v-model="stage.ownerRole" style="width: 100%">
+              <el-option v-for="r in roleOptions" :key="r.value" :label="r.label" :value="r.value" />
             </el-select>
           </el-form-item>
 
-          <el-form-item label="提醒规则">
-            <el-input v-model="stage.remindRule" placeholder="例如：提交后24小时内处理" />
+          <el-form-item label="时限(天)">
+            <el-input-number v-model="stage.deadline" :min="1" :max="90" style="width: 100%" />
           </el-form-item>
 
-          <el-form-item label="开启提醒">
-            <el-switch v-model="stage.remindEnabled" />
+          <!-- 材料清单 -->
+          <el-form-item label="材料清单">
+            <div class="materials-list">
+              <div v-for="(mat, mi) in stage.materials" :key="mi" class="material-row">
+                <el-input v-model="stage.materials[mi]" placeholder="材料名称" style="flex: 1" />
+                <el-button type="danger" size="small" :icon="'X'" text @click="handleRemoveMaterial(index, mi)" />
+              </div>
+              <el-button size="small" @click="handleAddMaterial(index)">+ 添加材料</el-button>
+            </div>
           </el-form-item>
         </el-form>
       </el-card>
@@ -170,6 +205,10 @@ function handleSave() {
   font-size: 14px;
 }
 
+.process-meta {
+  margin-bottom: 20px;
+}
+
 .stage-list {
   display: flex;
   flex-direction: column;
@@ -185,6 +224,17 @@ function handleSave() {
   justify-content: space-between;
   align-items: center;
   font-weight: bold;
+}
+
+.materials-list {
+  width: 100%;
+}
+
+.material-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
 }
 
 .bottom-bar {

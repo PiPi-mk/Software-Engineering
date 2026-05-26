@@ -2,6 +2,7 @@
 CLAUDE.md
 .claude/
 
-# 后端接口文档（不上传远程）
+# 后端接口/数据库文档（不上传远程）
 api-*.md
 errors.md
+db-schema.md

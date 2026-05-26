@@ -1,15 +1,23 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
+import type { JobType, JobStatus } from '../types/import-export'
+import { JobTypeLabel } from '../types/import-export'
 
 // ========== 上传相关状态 ==========
 const uploadRef = ref()
 const uploading = ref(false)
-const fileList = ref<any[]>([])
+const importType = ref<JobType>('STUDENT_IMPORT')
+const jobStatus = ref<JobStatus | null>(null)
+const statusMessage = ref('')
+
+const importTypeOptions: { label: string; value: JobType }[] = [
+  { label: JobTypeLabel.STUDENT_IMPORT, value: 'STUDENT_IMPORT' },
+  { label: JobTypeLabel.NOTICE_IMPORT, value: 'NOTICE_IMPORT' },
+]
 
 // ========== 模拟上传 ==========
 function handleFileChange(file: any) {
-  // 只允许 Excel 格式
   const validTypes = [
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'application/vnd.ms-excel',
@@ -23,20 +31,22 @@ function handleFileChange(file: any) {
   }
 
   uploading.value = true
-  fileList.value = [file]
+  jobStatus.value = '处理中'
+  statusMessage.value = `正在处理 ${JobTypeLabel[importType.value]}...`
 
-  // 模拟 2 秒上传过程
+  // 模拟 2 秒上传+校验过程
   setTimeout(() => {
     uploading.value = false
-    const success = Math.random() > 0.3 // 70% 成功率
+    const success = Math.random() > 0.3
 
     if (success) {
-      ElMessage.success(`文件「${file.name}」导入成功，共处理 128 条数据`)
+      jobStatus.value = '成功'
+      ElMessage.success(`「${file.name}」${JobTypeLabel[importType.value]}完成，共处理 128 条数据`)
     } else {
-      ElMessage.error(`文件「${file.name}」导入失败：第 12 行「学号」字段格式错误、第 47 行「姓名」为空、第 89 行「班级」未在系统中匹配，请修正后重新上传`)
+      jobStatus.value = '失败'
+      ElMessage.error(`「${file.name}」导入失败：第 12 行「学号」字段格式错误、第 47 行「姓名」为空、第 89 行「班级」未在系统中匹配，请修正后重新上传`)
     }
 
-    fileList.value = []
     uploadRef.value?.clearFiles()
   }, 2000)
 }
@@ -56,12 +66,13 @@ function handleDownloadTemplate() {
 
 // ========== 导出审批记录 ==========
 function handleExportRecords() {
-  const content = '申请人,申请类型,提交时间,审批状态,审批人,审批时间,审批意见\n张三,入党申请,2026-05-20 14:30,已通过,王书记,2026-05-21 09:00,材料齐全同意推荐\n李四,评优评先,2026-05-18 10:00,已驳回,刘老师,2026-05-19 16:20,缺少辅导员推荐信\n赵六,入党申请,2026-05-22 08:15,已通过,王书记,2026-05-23 11:00,符合条件同意'
+  // 导出头对齐 application 表字段
+  const content = '申请单号,申请类型,申请人ID,状态,提交时间,处理时间\napp_001,党团关系转出,u_student1,通过,2026-05-20 14:30,2026-05-21 09:00\napp_002,在读证明,u_student2,驳回,2026-05-18 10:00,2026-05-19 16:20\napp_003,特殊证明,u_student3,通过,2026-05-22 08:15,2026-05-23 11:00'
   const blob = new Blob(['﻿' + content], { type: 'text/csv;charset=utf-8' })
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
-  link.download = '审批记录_' + new Date().toISOString().slice(0, 10) + '.csv'
+  link.download = `审批记录_${new Date().toISOString().slice(0, 10)}.csv`
   link.click()
   URL.revokeObjectURL(url)
   ElMessage.success('审批记录导出已开始')
@@ -99,6 +110,14 @@ function beforeUpload(file: File) {
         请按照模板格式整理数据后上传 Excel 文件。系统将自动校验数据格式，如有错误会提示具体行号。
       </p>
 
+      <el-form inline>
+        <el-form-item label="导入类型">
+          <el-select v-model="importType" style="width: 180px">
+            <el-option v-for="opt in importTypeOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+          </el-select>
+        </el-form-item>
+      </el-form>
+
       <el-upload
         ref="uploadRef"
         class="upload-area"
@@ -120,13 +139,29 @@ function beforeUpload(file: File) {
         </div>
       </el-upload>
 
-      <!-- 上传 Loading -->
-      <div v-if="uploading" class="upload-status">
-        <el-alert type="info" :closable="false" show-icon>
-          <template #title>
-            <span>正在上传并校验数据 <el-icon class="is-loading"><svg viewBox="0 0 24 24" width="14" height="14" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" stroke-dasharray="31.4 31.4" stroke-linecap="round"/></svg></el-icon></span>
-          </template>
-        </el-alert>
+      <!-- 上传状态提示 -->
+      <div v-if="uploading || jobStatus" class="upload-status">
+        <el-alert
+          v-if="uploading"
+          type="info"
+          :closable="false"
+          show-icon
+          :title="statusMessage"
+        />
+        <el-alert
+          v-else-if="jobStatus === '成功'"
+          type="success"
+          :closable="false"
+          show-icon
+          title="任务处理成功"
+        />
+        <el-alert
+          v-else-if="jobStatus === '失败'"
+          type="error"
+          :closable="false"
+          show-icon
+          title="任务处理失败，请查看错误报告"
+        />
       </div>
 
       <div class="section-actions">
@@ -141,7 +176,7 @@ function beforeUpload(file: File) {
       </template>
 
       <p class="section-desc">
-        导出全部审批记录为 CSV 文件，可直接使用 Excel 打开查看或打印。
+        导出审批记录为 CSV 文件（字段对齐 application 表），可直接使用 Excel 打开查看或打印。
       </p>
 
       <div class="section-actions">
@@ -212,15 +247,6 @@ function beforeUpload(file: File) {
 
 .upload-status {
   margin-top: 12px;
-}
-
-.is-loading {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }
 
 .section-actions {
