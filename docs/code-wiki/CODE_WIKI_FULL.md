@@ -1,258 +1,252 @@
-# Code Wiki（完整单文件版）
+# Code Wiki（完整单文件版：覆盖全部远端分支）
 
-面向本仓库当前可见的全部分支与代码。经检索，本仓库仅存在 `main`（本地与 `origin` 远端均只有该分支），因此“全分支扫描”的结论等同于对 `main` 的完整扫描。
+本文档覆盖本仓库远端 `origin` 下的全部分支。之前本地仓库的 fetch 规则仅拉取 `main`，导致分支列表不完整；现已拉取并逐一检索全部分支内容，并在文档中按“分支 → 子工程/模块”进行归纳。
 
-仓库内容由两部分构成：
+为便于对多分支文件做可点击引用，本地生成了分支快照目录（Git worktree）：
 
-- 目标系统文档：根目录的需求/协作规划文件，描述「学院学生综合服务与党团管理平台」的目标范围与建议技术选型
-- 可运行代码：`demoApp/`（微信小程序 Demo「记录本（待办）」+ 本地 Node.js 待办 API）
-
-相关的多文件版 Code Wiki 已存在于 [docs/code-wiki](file:///workspace/docs/code-wiki)（`00-05` 系列文件）。本文档在其基础上做“单文件汇总 + 代码级关键函数说明”，并明确区分“规划/需求”与“已落地代码”。
+- `main/dev` 快照：[/workspace/.branch-worktrees/main](file:///workspace/.branch-worktrees/main)、[/workspace/.branch-worktrees/dev](file:///workspace/.branch-worktrees/dev)
+- `backend` 快照：[/workspace/.branch-worktrees/backend](file:///workspace/.branch-worktrees/backend)
+- `new_backend` 快照：[/workspace/.branch-worktrees/new_backend](file:///workspace/.branch-worktrees/new_backend)
+- `feature/notice-contracts-v1` 快照：[/workspace/.branch-worktrees/feature_notice_contracts](file:///workspace/.branch-worktrees/feature_notice_contracts)
+- `feature/phase1-integration-kit` 快照：[/workspace/.branch-worktrees/phase1_integration_kit](file:///workspace/.branch-worktrees/phase1_integration_kit)
+- `feature-pc-align-schema` 快照：[/workspace/.branch-worktrees/feature_pc_align_schema](file:///workspace/.branch-worktrees/feature_pc_align_schema)
 
 ---
 
-## 1. 仓库结构
+## 1. 分支清单与差异
 
-### 1.1 目录概览
+### 1.1 远端分支（origin）
 
-- `demoApp/`：可运行代码（小程序端 + 本地 Node 服务端）
-- `docs/code-wiki/`：已有的多文件版 Wiki（偏需求/规划 + demoApp 指引）
-- 根目录 `*.md`：需求、沟通版、分工计划、资料清单等
-- `产品需求文档.docx`：补充版 PRD（Word）
+核心业务相关分支与内容分布如下（按“子工程”维度归纳）：
 
-### 1.2 可运行代码结构（demoApp）
+- `origin/main`：仅 `demoApp/`（小程序 Demo + 本地 Node 待办 API）+ `docs/code-wiki/` 与根目录需求文档
+- `origin/dev`：与 `origin/main` 基本一致（同为 demoApp + 文档）
+- `origin/backend`：`admin-pc/`（Vue3 管理端）+ `backend/`（Express+TS 后端）+ `docs/code-wiki/`
+- `origin/new_backend`：仅后端（项目根 `src/` 结构，等价于 `origin/backend/backend/` 的扁平化版本）
+- `origin/feature/notice-contracts-v1`：在 `demoApp` 基础上新增 `docs/contracts/`（通知闭环契约文档）
+- `origin/feature/phase1-integration-kit`：`backend/`（一期闭环骨架版后端）+ `demoApp/` + `docs/contracts/`
+- `origin/feature-pc-align-schema`：仅 `admin-pc/`（加入 axios、API typings、页面与契约对齐），并移除了后端目录
+- `origin/trae/solo-agent-admCND`：仅新增单文件 Wiki（本文件）
+- `origin/trae/solo-agent-jxBH5V`：与 `origin/backend` 类似（admin-pc + 后端），用于自动化产出/试验
+
+结论：仓库是“多子工程 + 多条演进分支”的形态，不同分支保存了不同阶段/不同端的代码，并非单一 `main`。
+
+---
+
+## 2. 仓库整体架构（跨分支汇总）
+
+从“全分支合并视角”看，仓库目标是形成一个三端架构：
+
+- 学生端：微信小程序（现有 demoApp 为教学/原型）
+- 管理端：PC Web（Vue 3 + Element Plus）
+- 后端：Express + TypeScript（对接 Kingbase/PG，提供鉴权、通知、流程、审批、知识库、导入导出等 API）
+
+当前各端所在分支：
+
+- 小程序 Demo：`origin/main` / `origin/dev` / `origin/feature/phase1-integration-kit`
+- 管理端：`origin/backend` / `origin/feature-pc-align-schema`
+- 后端：`origin/backend` / `origin/new_backend` / `origin/feature/phase1-integration-kit`
+- 契约文档：`origin/feature/notice-contracts-v1` / `origin/feature/phase1-integration-kit`
+
+---
+
+## 3. 子工程一：微信小程序 Demo（demoApp）
+
+参考分支快照：[/workspace/.branch-worktrees/main/demoApp](file:///workspace/.branch-worktrees/main/demoApp)
+
+### 3.1 模块划分
 
 - 小程序入口
-  - [app.js](file:///workspace/demoApp/app.js)：小程序启动逻辑（根据 session 自动跳转）
-  - [app.json](file:///workspace/demoApp/app.json)：页面注册与窗口配置
-  - `app.wxss`：全局样式
-- 页面（WXML/WXSS/JS）
-  - `pages/login/`：登录页（带 Network 教学请求 + 本地登录逻辑）
-  - `pages/todos/`：待办页（以本地 Node 服务为唯一数据源）
-  - `pages/network-demo/`：Network 面板练习（成功/失败对照）
+  - [app.js](file:///workspace/.branch-worktrees/main/demoApp/app.js)
+  - [app.json](file:///workspace/.branch-worktrees/main/demoApp/app.json)
+- 页面
+  - 登录页：[/pages/login](file:///workspace/.branch-worktrees/main/demoApp/pages/login)
+  - 待办页：[/pages/todos](file:///workspace/.branch-worktrees/main/demoApp/pages/todos)
+  - Network 练习页：[/pages/network-demo](file:///workspace/.branch-worktrees/main/demoApp/pages/network-demo)
 - 工具
-  - [utils/storage.js](file:///workspace/demoApp/utils/storage.js)：Storage 读写、session、简单 hash
+  - Storage： [storage.js](file:///workspace/.branch-worktrees/main/demoApp/utils/storage.js)
 - 本地服务端
-  - [server/index.js](file:///workspace/demoApp/server/index.js)：Node.js 原生 `http` 模块实现的待办 CRUD API
+  - 待办 API： [server/index.js](file:///workspace/.branch-worktrees/main/demoApp/server/index.js)
+
+### 3.2 关键函数与数据流
+
+- 登录链路
+  - UI 输入 → `onLogin` 发起演示请求 → `doLocalLogin` 本地注册/校验 → 写入 session → `wx.reLaunch`
+  - 入口实现：[login.js:L64-L111](file:///workspace/.branch-worktrees/main/demoApp/pages/login/login.js#L64-L111)
+- 待办链路（服务端为唯一真源）
+  - `onShow` 读取 session → `fetchTodoList` 拉取服务端列表；若服务端为空且本地有旧数据则 `POST /todo/sync` 迁移
+  - 拉取/迁移实现：[todos.js:L32-L119](file:///workspace/.branch-worktrees/main/demoApp/pages/todos/todos.js#L32-L119)
+- 本地服务端（Node 原生 http + 内存 store）
+  - 路由与校验：[/server/index.js:L64-L165](file:///workspace/.branch-worktrees/main/demoApp/server/index.js#L64-L165)
 
 ---
 
-## 2. 分支与版本结论
+## 4. 子工程二：后端（Express + TypeScript）
 
-### 2.1 分支扫描结论
+本仓库存在两种后端形态：
 
-- 本地分支：`main`
-- 远端分支：`origin/main`
-- 未发现 `dev`、`feature-*` 等分支；仓库内 “分支策略” 仅存在于协作文档中（规划约定，非实际分支）
+- 完整功能版（模块齐全，带 Controller/Service/Route 分层）：`origin/backend`（目录 `backend/`）
+- 骨架版（一期闭环最小框架 + 统一返回/错误中间件）：`origin/feature/phase1-integration-kit`（目录 `backend/`）
+- 扁平化版：`origin/new_backend`（根目录 `src/`，代码结构与完整功能版基本一致）
 
-### 2.2 当前实现边界
+### 4.1 完整功能版后端（origin/backend）
 
-目标系统（学生端/管理端/后端/数据库）在仓库内以文档形式存在，但没有对应工程骨架；当前唯一可运行实现是 `demoApp/` 的教学 Demo。
+参考分支快照：[/workspace/.branch-worktrees/backend/backend](file:///workspace/.branch-worktrees/backend/backend)
 
----
+#### 4.1.1 入口与路由挂载
 
-## 3. 整体架构（需求/规划 vs 当前实现）
+- 应用入口：[app.ts:L1-L24](file:///workspace/.branch-worktrees/backend/backend/src/app.ts#L1-L24)
+  - 绑定 `cors` 与 `express.json()`
+  - 路由前缀：
+    - `/api/notices`
+    - `/api/auth`
+    - `/api/process`
+    - `/api/applications`
+    - `/api/knowledge`
 
-### 3.1 目标系统（按需求定义，尚未在代码中落地）
+#### 4.1.2 鉴权中间件
 
-来源参考：
+- JWT 校验：`authenticate` in [auth.ts:L8-L29](file:///workspace/.branch-worktrees/backend/backend/src/middlewares/auth.ts#L8-L29)
+  - 约定：`Authorization: Bearer <token>`
+  - 解析后的用户信息挂到 `req.user`
+  - 注意：当前实现将密钥常量写在代码里；建议改为环境变量注入，避免泄露风险
 
-- [需求文档-小组需求说明V1.md](file:///workspace/需求文档-小组需求说明V1.md)
-- [需求文档-甲方沟通版B.md](file:///workspace/需求文档-甲方沟通版B.md)
-- [四人分工与整体流程计划.md](file:///workspace/四人分工与整体流程计划.md)
+#### 4.1.3 通知模块（Notice）
 
-目标系统的推荐形态：
+- 路由层：通知模块全量加鉴权拦截，通知 CRUD + 已读/统计在同一 Router 中
+  - [notice.ts:L1-L22](file:///workspace/.branch-worktrees/backend/backend/src/routes/notice.ts#L1-L22)
+- Controller（接口编排 + 权限校验 + 返回结构）
+  - 列表/详情/创建/修改/删除/已读/统计： [noticeController.ts:L4-L175](file:///workspace/.branch-worktrees/backend/backend/src/controllers/noticeController.ts#L4-L175)
+  - 典型权限策略：
+    - 创建/修改/删除/统计：`admin`
+    - 已读：`student`
+- Service（SQL 与数据库访问）
+  - 分页列表（学生带 is_read，管理员固定 false）：[noticeService.ts:L5-L40](file:///workspace/.branch-worktrees/backend/backend/src/services/noticeService.ts#L5-L40)
+  - 已读幂等：利用 `ON CONFLICT (notice_id, student_id)`：[noticeService.ts:L76-L88](file:///workspace/.branch-worktrees/backend/backend/src/services/noticeService.ts#L76-L88)
 
-- 学生端：微信小程序（文档建议使用 uni-app 以复用 Vue 语法）
-- 管理端：PC Web 管理后台（文档建议 Vue 3 + Element Plus）
-- 后端服务：统一 API、RBAC、文件处理、定时任务、审计
-- 数据库：人大金仓 Kingbase（按 PostgreSQL 方式连接）
+#### 4.1.4 流程模块（Process）
 
-推荐后端分层（概念层面）：
+- Service 侧使用事务保证“更新进度 + 写入日志留痕”强一致性：
+  - [processService.ts:L55-L99](file:///workspace/.branch-worktrees/backend/backend/src/services/processService.ts#L55-L99)
 
-- Controller（HTTP 接口层）：鉴权、参数校验、统一返回结构
-- Service（业务层）：通知/流程/审批/导入导出/知识库
-- Repository/DAO（数据访问层）：Kingbase 表与查询
-- Infra（基础设施）：文件存储、任务调度、日志审计、加密
+#### 4.1.5 审批模块（Application）
 
-### 3.2 当前实现（demoApp：小程序 + 本地 Node API）
+- 申请提交：将 `formData/attachments` JSON 化存入 DB：[applicationService.ts:L5-L21](file:///workspace/.branch-worktrees/backend/backend/src/services/applicationService.ts#L5-L21)
+- 审批操作：事务内更新主表状态、写审批日志、（通过时）写入模拟结果文件路径：[applicationService.ts:L75-L127](file:///workspace/.branch-worktrees/backend/backend/src/services/applicationService.ts#L75-L127)
 
-当前 demoApp 的真实架构是“前端小程序直连本地 Node API + 本地 Storage 辅助”：
+### 4.2 骨架版后端（origin/feature/phase1-integration-kit）
 
-- 小程序端：原生小程序（`App`/`Page` + `wx.request` + `wx.getStorageSync`）
-- 服务端：单文件 Node.js HTTP Server（内存 store，重启即清空）
-- 数据存储：
-  - 服务端内存：按昵称隔离的 todo 列表（唯一真源）
-  - 小程序 Storage：用户表、会话、历史旧版待办（首次会迁移到服务端）
+参考分支快照：[/workspace/.branch-worktrees/phase1_integration_kit/backend](file:///workspace/.branch-worktrees/phase1_integration_kit/backend)
 
----
-
-## 4. 主要模块职责（当前可运行代码）
-
-### 4.1 登录与会话（pages/login + utils/storage）
-
-核心职责：
-
-- 采集昵称/密码并做本地校验
-- 先发起一笔教学用的 Network 请求（`httpbin.org`），用于在开发者工具 Network 面板观察请求细节
-- 之后执行本地登录逻辑（自动注册或校验密码）并写入 session
-
-关键实现：
-
-- 登录页逻辑：`onLogin`、`doLocalLogin` in [login.js](file:///workspace/demoApp/pages/login/login.js#L36-L110)
-- 本地用户表/会话存取：`loadUsers/saveUsers/getSession/setSession/clearSession` in [storage.js](file:///workspace/demoApp/utils/storage.js#L34-L77)
-- 密码哈希（仅 Demo 级别）：`hashPassword` in [storage.js](file:///workspace/demoApp/utils/storage.js#L24-L32)
-
-Storage 键约定（与 [demoApp/README.md](file:///workspace/demoApp/README.md#L14-L18) 一致）：
-
-- `users:v1`：用户表 `{ [nickname]: { passwordHash, createdAt } }`
-- `session:v1`：当前会话 `{ nickname, loginAt }`
-- `todos:v1:<nickname>`：旧版本地待办（本版本以服务端为准，仅用于迁移）
-
-### 4.2 待办（pages/todos + server）
-
-核心职责：
-
-- 待办的唯一数据源是服务端：列表、添加、删除均走 Node API
-- 当服务端返回空列表且本地还有旧待办时，执行一次性迁移（`POST /todo/sync`），迁移后清空本地旧键
-
-关键实现：
-
-- 页面 onShow：读取 session 并触发拉取 in [todos.js](file:///workspace/demoApp/pages/todos/todos.js#L32-L43)
-- 拉取列表 + 迁移逻辑：`fetchTodoList` in [todos.js](file:///workspace/demoApp/pages/todos/todos.js#L56-L119)
-- 新增：`onAdd` → `POST /todo/add` in [todos.js](file:///workspace/demoApp/pages/todos/todos.js#L125-L157)
-- 删除：`onDelete` → `DELETE /todo/item` in [todos.js](file:///workspace/demoApp/pages/todos/todos.js#L159-L188)
-- 退出登录：`onLogout`（清 session 后回登录页）in [todos.js](file:///workspace/demoApp/pages/todos/todos.js#L190-L201)
-
-### 4.3 Network 面板练习（pages/network-demo）
-
-核心职责：
-
-- 产生一笔“必然成功”的 HTTPS 请求与一笔“必然失败”的请求，便于对照观察 Network 面板与 `wx.request` 的 success/fail 行为
-
-关键实现：
-
-- `onRequestOk`：`GET https://httpbin.org/get` in [network-demo.js](file:///workspace/demoApp/pages/network-demo/network-demo.js#L12-L33)
-- `onRequestFail`：请求 `.invalid` 保留域名，预期触发 fail in [network-demo.js](file:///workspace/demoApp/pages/network-demo/network-demo.js#L35-L56)
-
-### 4.4 App 启动与自动跳转（app.js）
-
-核心职责：
-
-- 小程序启动时读取 session，若已登录则自动跳转到待办页
-
-关键实现：
-
-- `onLaunch` in [app.js](file:///workspace/demoApp/app.js#L6-L13)
+- App 构建：`buildApp` in [app.ts:L6-L17](file:///workspace/.branch-worktrees/phase1_integration_kit/backend/src/app.ts#L6-L17)
+- 路由示例：`GET /api/health` in [routes/index.ts:L4-L11](file:///workspace/.branch-worktrees/phase1_integration_kit/backend/src/routes/index.ts#L4-L11)
+- 统一返回：`ok/fail` in [response.ts:L1-L13](file:///workspace/.branch-worktrees/phase1_integration_kit/backend/src/utils/response.ts#L1-L13)
+- 统一错误中间件： [error.middleware.ts:L4-L11](file:///workspace/.branch-worktrees/phase1_integration_kit/backend/src/middlewares/error.middleware.ts#L4-L11)
 
 ---
 
-## 5. 服务端 API（demoApp/server）
+## 5. 子工程三：管理端（admin-pc：Vue 3 + Element Plus）
 
-服务端文件：[server/index.js](file:///workspace/demoApp/server/index.js)
+管理端存在两个主要形态：
 
-### 5.1 数据模型
+- 纯 UI mock 版：`origin/backend` 的 `admin-pc/`（页面内置 mock 数据，未接后端）
+- 契约对齐/联调版：`origin/feature-pc-align-schema` 的 `admin-pc/`（axios + typed API + 拦截器）
 
-服务端唯一数据结构：
+### 5.1 路由与页面
 
-- `todoStore: Record<string, Array<{ id, text, createdAt }>>`，key 为 `nickname`
-  - 初始化与获取：`getList(nickname)` in [index.js](file:///workspace/demoApp/server/index.js#L37-L42)
+纯 UI 版（origin/backend 快照）：
 
-### 5.2 通用能力
+- Vue Router： [router/index.ts:L1-L28](file:///workspace/.branch-worktrees/backend/admin-pc/src/router/index.ts#L1-L28)
+  - `/notice`：通知管理
+  - `/approval`：审批工作台
 
-- CORS：`cors(res)` 设置允许跨域，支持小程序与 Postman 调试 in [index.js](file:///workspace/demoApp/server/index.js#L15-L19)
-- JSON 响应封装：`json(res, status, obj)` in [index.js](file:///workspace/demoApp/server/index.js#L21-L26)
-- Query 参数解析：`getNicknameFromUrl(rawUrl)` in [index.js](file:///workspace/demoApp/server/index.js#L28-L35)
-- Body 读取与 JSON 解析：`readJsonBody(req)` in [index.js](file:///workspace/demoApp/server/index.js#L44-L62)
+契约对齐版（feature-pc-align-schema 快照）：
 
-### 5.3 路由与接口约定
+- Layout 菜单扩展（通知/审批/流程/导入导出）：[Layout.vue:L8-L13](file:///workspace/.branch-worktrees/feature_pc_align_schema/admin-pc/src/views/Layout.vue#L8-L13)
+- 通知管理页改为真实请求：
+  - API 调用入口：[NoticeManage.vue:L21-L109](file:///workspace/.branch-worktrees/feature_pc_align_schema/admin-pc/src/views/NoticeManage.vue#L21-L109)
 
-接口统一返回结构：
+### 5.2 API 访问层（axios）
 
-- 成功：`{ code: 0, message: "ok", nickname, data: [...] }`
-- 失败：`{ code: 400|404, message: "...", ... }`
-
-接口列表（与 [demoApp/README.md](file:///workspace/demoApp/README.md#L28-L39) 一致）：
-
-- `GET /todo/list?nickname=`
-  - 处理分支：`if (req.method === "GET" && path === "/todo/list")` in [index.js](file:///workspace/demoApp/server/index.js#L90-L94)
-- `POST /todo/add?nickname=`（body: `{ "text": "..." }`）
-  - 处理分支：`if (req.method === "POST" && path === "/todo/add")` in [index.js](file:///workspace/demoApp/server/index.js#L96-L118)
-  - 生成 id：`t_${Date.now()}_${Math.random()...}` in [index.js](file:///workspace/demoApp/server/index.js#L106-L111)
-- `POST /todo/sync?nickname=`（body: `{ "items": [{ id, text, createdAt }, ...] }` 全量覆盖）
-  - 处理分支：`if (req.method === "POST" && path === "/todo/sync")` in [index.js](file:///workspace/demoApp/server/index.js#L120-L143)
-- `DELETE /todo/item?nickname=&id=`
-  - 处理分支：`if (req.method === "DELETE" && path === "/todo/item")` in [index.js](file:///workspace/demoApp/server/index.js#L145-L162)
-
-错误处理要点：
-
-- `/todo/*` 接口缺少 `nickname`：返回 400（统一在路由前置校验）in [index.js](file:///workspace/demoApp/server/index.js#L75-L88)
-- JSON 解析失败：返回 400（`readJsonBody` reject/catch）in [index.js](file:///workspace/demoApp/server/index.js#L113-L115)
+- axios 实例与拦截器（自动注入 token，统一处理 `{code,message,data}`）：[request.ts:L4-L41](file:///workspace/.branch-worktrees/feature_pc_align_schema/admin-pc/src/utils/request.ts#L4-L41)
+- 通知模块 API typings 与方法： [notice.ts:L3-L65](file:///workspace/.branch-worktrees/feature_pc_align_schema/admin-pc/src/api/notice.ts#L3-L65)
 
 ---
 
-## 6. 依赖关系
+## 6. 契约文档（docs/contracts）
 
-### 6.1 demoApp（当前实际依赖）
+参考分支快照：[/workspace/.branch-worktrees/feature_notice_contracts/docs/contracts](file:///workspace/.branch-worktrees/feature_notice_contracts/docs/contracts)
 
-- 运行时
-  - 小程序端：微信小程序运行环境（`wx.*` API）
-  - 服务端：Node.js（使用内置模块 `http`、`URL`、`Buffer`）
-- 外部网络（教学用途）
-  - `httpbin.org`：用于 Network 面板观察请求与响应
-- 工程工具
-  - 微信开发者工具配置：[project.config.json](file:///workspace/demoApp/project.config.json)
-    - `setting.urlCheck: false`：开发者工具环境可绕过合法域名校验（便于演示；真机需按微信要求配置域名）
+核心文档：
 
-### 6.2 目标系统（规划依赖，仓库内未落地）
+- 通知闭环 API v1： [api-v1-notice.md](file:///workspace/.branch-worktrees/feature_notice_contracts/docs/contracts/api-v1-notice.md)
+- 错误码与返回规范： [errors.md](file:///workspace/.branch-worktrees/feature_notice_contracts/docs/contracts/errors.md)
 
-该部分属于需求/选型建议，详见多文件版 Wiki：
-
-- [01-整体架构.md](file:///workspace/docs/code-wiki/01-整体架构.md)
-- [04-依赖关系.md](file:///workspace/docs/code-wiki/04-依赖关系.md)
+该契约与后端 `origin/backend` 的实现高度一致（同样的路由前缀与错误码语义），并被 `feature-pc-align-schema` 的管理端调用层对齐（例如 `getNoticeList/createNotice/getNoticeStats`）。
 
 ---
 
-## 7. 运行与开发方式
+## 7. 依赖关系（跨分支汇总）
 
-### 7.1 运行 demoApp（当前唯一可运行内容）
+### 7.1 demoApp
 
-1) 启动本地服务端（仓库根目录）
+- 微信小程序运行环境（`wx.*`）
+- 本地 Node 服务端（Node.js 内置 `http`）
+
+### 7.2 后端（完整功能版）
+
+参考 [backend/package.json](file:///workspace/.branch-worktrees/backend/backend/package.json)：
+
+- Web 框架：Express
+- 跨域：cors
+- JWT：jsonwebtoken
+- DB：pg（以 PostgreSQL 方式连接 Kingbase）
+- 开发：TypeScript + ts-node + nodemon
+
+### 7.3 管理端（契约对齐版）
+
+参考 [admin-pc/package.json](file:///workspace/.branch-worktrees/feature_pc_align_schema/admin-pc/package.json)：
+
+- Vue 3、Vue Router、Element Plus
+- axios（用于联调后端 API）
+- Vite（开发/构建）
+
+---
+
+## 8. 运行方式（按子工程）
+
+### 8.1 运行 demoApp（origin/main）
+
+1) 启动本地 Node 待办服务：
 
 ```bash
-node demoApp/server/index.js
+node /workspace/.branch-worktrees/main/demoApp/server/index.js
 ```
 
-2) 微信开发者工具导入并运行小程序
+2) 微信开发者工具导入目录：`/workspace/.branch-worktrees/main/demoApp`
 
-- 导入目录：`demoApp/`
-- 登录页：输入昵称与密码即可登录（Demo 逻辑：新用户自动注册；老用户校验密码）
-- 待办页：增删查均请求 `http://localhost:3000`
+### 8.2 运行后端（origin/backend）
 
-3) Postman/浏览器验证服务端（可选）
+```bash
+cd /workspace/.branch-worktrees/backend/backend
+npm install
+npm run dev
+```
 
-- `GET http://localhost:3000/todo/list?nickname=zhangsan`
+说明：
 
-### 7.2 调试要点（demoApp）
+- 默认监听端口为 3000（见 [app.ts:L22-L24](file:///workspace/.branch-worktrees/backend/backend/src/app.ts#L22-L24)）
+- DB 连接参数目前写在代码里（见 `db/index.ts`）；建议在真实环境中改为读取环境变量（避免把敏感信息写入仓库）
 
-- 若待办页请求失败：优先确认 Node 服务是否启动、端口是否为 3000、以及环境是否允许访问 `localhost`
-- 若 Network 练习请求不可用：确认开发者工具允许外网访问；同时注意真机预览的合法域名要求
+### 8.3 运行管理端（feature-pc-align-schema）
 
----
+```bash
+cd /workspace/.branch-worktrees/feature_pc_align_schema/admin-pc
+npm install
+npm run dev
+```
 
-## 8. 目标系统模块清单（需求视角，便于后续落地对齐）
+说明：
 
-此部分用于把 demoApp 的“联调习惯”与“未来目标系统模块”对齐，避免误解 demoApp 已经实现目标系统。
-
-一期模块（需求文档 A–E）：
-
-- 模块A：政策/制度知识库与标准问答
-- 模块B：党团事务流程管理（入党/入团）
-- 模块C：通知与精准推送
-- 模块D：电子证明生成与审批
-- 模块E：导入导出
-
-建议的关键领域对象与接口边界详见：
-
-- [03-关键领域对象与接口.md](file:///workspace/docs/code-wiki/03-关键领域对象与接口.md)
-
+- `request.ts` 的 `baseURL` 为 `/api`：[request.ts:L4-L7](file:///workspace/.branch-worktrees/feature_pc_align_schema/admin-pc/src/utils/request.ts#L4-L7)
+- 本地开发需要 Vite 代理把 `/api` 转发到后端（可在 `vite.config.ts` 中配置）
