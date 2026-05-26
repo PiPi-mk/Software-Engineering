@@ -1,3 +1,4 @@
 # AI 辅助配置文件（不上传远程）
 CLAUDE.md
 .claude/
+node_modules/
