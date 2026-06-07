@@ -6,7 +6,7 @@ import request from '../utils/request'
 interface Student {
   id: string; studentNo: string; name: string
   grade: string; major: string; className: string
-  politicalStatus: string; phone: string; hasAccount: boolean
+  politicalStatus: string; phone: string; email: string; hasAccount: boolean
 }
 
 const students = ref<Student[]>([])
@@ -26,16 +26,15 @@ const majors = computed(() => [...new Set(students.value.map(s => s.major).filte
 const politicals = computed(() => [...new Set(students.value.map(s => s.politicalStatus).filter(Boolean))])
 const dialogVisible = ref(false)
 const editing = ref(false)
-const form = ref<Student>({ id: '', studentNo: '', name: '', grade: '', major: '', className: '', politicalStatus: '', phone: '', hasAccount: false })
+const form = ref<Student & { password?: string }>({ id: '', studentNo: '', name: '', grade: '', major: '', className: '', politicalStatus: '', phone: '', email: '', hasAccount: false, password: '' })
 
 async function fetchList() {
   loading.value = true
   try {
-    const res = await request.get('/students-list', { params: {
+    const res = await request.get('/students', { params: {
       page: page.value, pageSize: pageSize.value,
       grade: filterGrade.value || undefined,
       major: filterMajor.value || undefined,
-      political: filterPolitical.value || undefined,
     }})
     students.value = res.data.list || []
     total.value = res.data.total || 0
@@ -50,7 +49,7 @@ onMounted(fetchList)
 
 function handleCreate() {
   editing.value = false
-  form.value = { id: '', studentNo: '', name: '', grade: '', major: '', className: '', politicalStatus: '', phone: '', hasAccount: false }
+  form.value = { id: '', studentNo: '', name: '', grade: '', major: '', className: '', politicalStatus: '', phone: '', email: '', hasAccount: false, password: '' }
   dialogVisible.value = true
 }
 
@@ -66,16 +65,27 @@ async function handleSave() {
   }
   try {
     if (editing.value) {
-      await request.put('/students-list/' + form.value.id, form.value)
+      // 只传有值的字段（避免将脱敏后的 phone/email 覆盖原值）
+      const body: Record<string, string> = {}
+      const fields = ['studentNo', 'name', 'grade', 'major', 'className', 'politicalStatus', 'phone', 'email']
+      fields.forEach(k => {
+        const v = (form.value as any)[k]
+        if (v !== undefined && v !== '') body[k] = v
+      })
+      await request.put('/students/' + form.value.id, body)
       ElMessage.success('修改成功')
     } else {
-      // Create via import with single-row CSV (properly escaped)
-      const esc = (s: string) => (s || '').includes(',') ? '\"' + (s || '') + '\"' : (s || '')
-      const csv = '学号,姓名,年级,专业,班级,政治面貌,手机号\n' +
-        [esc(form.value.studentNo), esc(form.value.name), esc(form.value.grade), esc(form.value.major), esc(form.value.className), esc(form.value.politicalStatus), esc(form.value.phone)].join(',')
-      const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' })
-      const fd = new FormData(); fd.append('file', blob, 'student.csv')
-      await request.post('/students/import', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+      await request.post('/students', {
+        studentNo: form.value.studentNo,
+        name: form.value.name,
+        password: form.value.password || '123456',
+        grade: form.value.grade || undefined,
+        major: form.value.major || undefined,
+        className: form.value.className || undefined,
+        politicalStatus: form.value.politicalStatus || undefined,
+        phone: form.value.phone || undefined,
+        email: form.value.email || undefined,
+      })
       ElMessage.success('添加成功')
     }
     dialogVisible.value = false
@@ -86,7 +96,7 @@ async function handleSave() {
 async function handleDelete(row: Student) {
   try {
     await ElMessageBox.confirm('确定删除学生「' + row.name + '」？', '确认', { type: 'warning' })
-    await request.delete('/students-list/' + row.id)
+    await request.delete('/students/' + row.id)
     ElMessage.success('已删除')
     fetchList()
   } catch {}
@@ -95,8 +105,8 @@ async function handleDelete(row: Student) {
 async function handleResetPwd(row: Student) {
   try {
     await ElMessageBox.confirm('重置「' + row.name + '」的密码？', '确认', { type: 'warning' })
-    const res = await request.post('/students-list/' + row.id + '/reset-password')
-    ElMessage.success(res.data.password || '已重置')
+    const res = await request.put('/students/' + row.id + '/reset-password')
+    ElMessage.success(res.message || '已重置')
   } catch {}
 }
 </script>
@@ -127,6 +137,7 @@ async function handleResetPwd(row: Student) {
       <el-table-column prop="className" label="班级" width="180" show-overflow-tooltip />
       <el-table-column prop="politicalStatus" label="政治面貌" width="90" />
       <el-table-column prop="phone" label="手机号" width="120" />
+      <el-table-column prop="email" label="邮箱" width="160" show-overflow-tooltip />
       <el-table-column label="账号" width="70">
         <template #default="{ row }">
           <el-tag :type="row.hasAccount ? 'success' : 'info'" size="small">{{ row.hasAccount ? '已激活' : '无' }}</el-tag>
@@ -154,6 +165,8 @@ async function handleResetPwd(row: Student) {
         <el-form-item label="班级"><el-input v-model="form.className" placeholder="如 计算机2024级1班" /></el-form-item>
         <el-form-item label="政治面貌"><el-input v-model="form.politicalStatus" placeholder="如 共青团员" /></el-form-item>
         <el-form-item label="手机号"><el-input v-model="form.phone" placeholder="可脱敏" /></el-form-item>
+        <el-form-item label="邮箱"><el-input v-model="form.email" placeholder="如 student@example.com" /></el-form-item>
+        <el-form-item v-if="!editing" label="初始密码"><el-input v-model="form.password" placeholder="不填则默认 123456" show-password /></el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
