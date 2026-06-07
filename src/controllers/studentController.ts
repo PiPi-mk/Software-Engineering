@@ -50,7 +50,7 @@ export class StudentController {
 
     // 3. 管理员创建学生 (POST /api/students)
     static async create(req: Request, res: Response) {
-        const { studentNo, name, password, grade, major, phone, email } = req.body;
+        const { studentNo, name, password, grade, major, className, politicalStatus, phone, email } = req.body;
         const user = (req as any).user;
 
         if (user.role !== 'admin') {
@@ -62,7 +62,8 @@ export class StudentController {
 
         try {
             const student = await StudentService.createStudent(
-                studentNo, name, password, grade, major, phone, email
+                user.id, studentNo, name, password,
+                grade, major, className, politicalStatus, phone, email
             );
             res.json({ code: 0, message: '学生创建成功', data: student });
         } catch (error: any) {
@@ -81,7 +82,7 @@ export class StudentController {
         }
 
         try {
-            const rowCount = await StudentService.updateStudent(id, body);
+            const rowCount = await StudentService.updateStudent(user.id, id, body);
             if (rowCount === 0) {
                 return res.json({ code: 40401, message: '学生不存在，修改失败', data: null });
             }
@@ -104,7 +105,7 @@ export class StudentController {
         const password = newPassword || '123456';
 
         try {
-            const rowCount = await StudentService.resetStudentPassword(id, password);
+            const rowCount = await StudentService.resetStudentPassword(user.id, id, password);
             if (rowCount === 0) {
                 return res.json({ code: 40401, message: '学生不存在或非学生账号，重置失败', data: null });
             }
@@ -124,7 +125,7 @@ export class StudentController {
         }
 
         try {
-            await StudentService.deleteStudent(id);
+            await StudentService.deleteStudent(user.id, id);
             res.json({ code: 0, message: '学生删除成功', data: null });
         } catch (error: any) {
             res.json({ code: 50001, message: '内部错误', data: error.message });

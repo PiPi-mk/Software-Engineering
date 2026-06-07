@@ -6,7 +6,7 @@ export class KnowledgeController {
     // --- 知识库管理 CRUD（仅管理员） ---
 
     // 1. 获取知识库列表
-    static async list(req: Request, res: Response) {
+    static async list(_req: Request, res: Response) {
         try {
             const list = await KnowledgeService.getAllPolicies();
             res.json({ code: 0, message: 'ok', data: { list } });
@@ -28,7 +28,7 @@ export class KnowledgeController {
         }
 
         try {
-            const policy = await KnowledgeService.createPolicy(title, content, tags);
+            const policy = await KnowledgeService.createPolicy(user.id, title, content, tags);
             res.json({ code: 0, message: '政策添加成功', data: policy });
         } catch (error: any) {
             res.json({ code: 50001, message: '内部错误', data: error.message });
@@ -49,7 +49,7 @@ export class KnowledgeController {
         }
 
         try {
-            const rowCount = await KnowledgeService.updatePolicy(id, title, content, tags);
+            const rowCount = await KnowledgeService.updatePolicy(user.id, id, title, content, tags);
             if (rowCount === 0) {
                 return res.json({ code: 40401, message: '政策不存在，修改失败', data: null });
             }
@@ -69,7 +69,7 @@ export class KnowledgeController {
         }
 
         try {
-            const rowCount = await KnowledgeService.deletePolicy(id);
+            const rowCount = await KnowledgeService.deletePolicy(user.id, id);
             if (rowCount === 0) {
                 return res.json({ code: 40401, message: '政策不存在，删除失败', data: null });
             }

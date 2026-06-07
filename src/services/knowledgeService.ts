@@ -1,4 +1,5 @@
 import { pool } from '../db';
+import { writeAuditLog } from '../utils/auditLog';
 
 export class KnowledgeService {
 
@@ -21,7 +22,7 @@ export class KnowledgeService {
     }
 
     // 新增政策
-    static async createPolicy(title: string, content: string, tags: string) {
+    static async createPolicy(operatorId: string, title: string, content: string, tags: string) {
         const id = `pk_${Date.now()}`;
         const sql = `
             INSERT INTO policy_knowledge (id, title, content, tags)
@@ -29,25 +30,40 @@ export class KnowledgeService {
             RETURNING *
         `;
         const result = await pool.query(sql, [id, title, content, tags || '']);
+
+        await writeAuditLog(operatorId, '新增政策', 'policy', id,
+            JSON.stringify({ title, tags }));
+
         return result.rows[0];
     }
 
     // 修改政策
-    static async updatePolicy(id: string, title: string, content: string, tags: string) {
+    static async updatePolicy(operatorId: string, id: string, title: string, content: string, tags: string) {
         const sql = `
             UPDATE policy_knowledge
             SET title = $1, content = $2, tags = $3
             WHERE id = $4
         `;
         const result = await pool.query(sql, [title, content, tags || '', id]);
+
+        if (result.rowCount && result.rowCount > 0) {
+            await writeAuditLog(operatorId, '修改政策', 'policy', id,
+                JSON.stringify({ title, tags }));
+        }
+
         return result.rowCount;
     }
 
     // 删除政策
-    static async deletePolicy(id: string) {
+    static async deletePolicy(operatorId: string, id: string) {
         const result = await pool.query(
             `DELETE FROM policy_knowledge WHERE id = $1`, [id]
         );
+
+        if (result.rowCount && result.rowCount > 0) {
+            await writeAuditLog(operatorId, '删除政策', 'policy', id, '');
+        }
+
         return result.rowCount;
     }
 

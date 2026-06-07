@@ -1,5 +1,6 @@
 import { pool } from '../db';
 import { maskStudentFields } from '../utils/privacy';
+import { writeAuditLog } from '../utils/auditLog';
 
 export class StudentService {
 
@@ -7,7 +8,8 @@ export class StudentService {
     static async getAllStudents(grade?: string, major?: string) {
         let sql = `
             SELECT st.id, st.student_no, st.name,
-                   st.grade, st.major, st.phone, st.email,
+                   st.grade, st.major, st.class_name, st.political_status,
+                   st.phone, st.email, st.updated_at,
                    su.username, su.role
             FROM student st
             LEFT JOIN syst_user su ON st.id = su.id
@@ -36,7 +38,8 @@ export class StudentService {
     static async getStudentById(id: string) {
         const sql = `
             SELECT st.id, st.student_no, st.name,
-                   st.grade, st.major, st.phone, st.email,
+                   st.grade, st.major, st.class_name, st.political_status,
+                   st.phone, st.email, st.updated_at,
                    su.username, su.role
             FROM student st
             LEFT JOIN syst_user su ON st.id = su.id
@@ -49,11 +52,14 @@ export class StudentService {
 
     // 3. 管理员创建学生（事务：同时创建 syst_user 登录账号 和 student 档案）
     static async createStudent(
+        operatorId: string,
         studentNo: string,
         name: string,
         password: string,
         grade?: string,
         major?: string,
+        className?: string,
+        politicalStatus?: string,
         phone?: string,
         email?: string
     ) {
@@ -73,15 +79,20 @@ export class StudentService {
 
             // 第二步：创建学生档案
             const studentSql = `
-                INSERT INTO student (id, student_no, name, grade, major, phone, email)
-                VALUES ($1, $2, $3, $4, $5, $6, $7)
+                INSERT INTO student (id, student_no, name, grade, major, class_name, political_status, phone, email)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                 RETURNING *
             `;
             const result = await client.query(studentSql, [
                 id, studentNo, name,
                 grade || null, major || null,
+                className || null, politicalStatus || null,
                 phone || null, email || null
             ]);
+
+            // 审计日志
+            await writeAuditLog(operatorId, '创建学生', 'student', id,
+                JSON.stringify({ studentNo, name, grade, major, className, politicalStatus }));
 
             await client.query('COMMIT');
             return { ...result.rows[0], username: studentNo, role: 'student' };
@@ -94,9 +105,9 @@ export class StudentService {
     }
 
     // 4. 管理员编辑学生信息（动态更新：只修改前端传过来的字段）
-    static async updateStudent(id: string, fields: Record<string, any>) {
+    static async updateStudent(operatorId: string, id: string, fields: Record<string, any>) {
         // 白名单：只允许更新这些字段
-        const allowedFields = ['name', 'student_no', 'grade', 'major', 'phone', 'email'];
+        const allowedFields = ['name', 'student_no', 'grade', 'major', 'class_name', 'political_status', 'phone', 'email'];
         const setClauses: string[] = [];
         const params: any[] = [];
         let i = 1;
@@ -113,6 +124,12 @@ export class StudentService {
             return 0; // 没有可更新字段
         }
 
+        // 每次编辑自动刷新 updated_at
+        const now = Date.now();
+        setClauses.push(`updated_at = $${i}`);
+        params.push(now);
+        i++;
+
         // 同时更新 syst_user 的 username（若 student_no 被修改）
         const newStudentNo = fields['student_no'];
         if (newStudentNo !== undefined) {
@@ -123,18 +140,29 @@ export class StudentService {
         params.push(id);
         const sql = `UPDATE student SET ${setClauses.join(', ')} WHERE id = $${i}`;
         const result = await pool.query(sql, params);
+
+        if (result.rowCount && result.rowCount > 0) {
+            await writeAuditLog(operatorId, '编辑学生', 'student', id,
+                JSON.stringify(fields));
+        }
+
         return result.rowCount;
     }
 
     // 5. 管理员重置学生密码
-    static async resetStudentPassword(id: string, newPassword: string) {
+    static async resetStudentPassword(operatorId: string, id: string, newPassword: string) {
         const sql = `UPDATE syst_user SET password = $1 WHERE id = $2 AND role = 'student'`;
         const result = await pool.query(sql, [newPassword, id]);
+
+        if (result.rowCount && result.rowCount > 0) {
+            await writeAuditLog(operatorId, '重置密码', 'student', id, '');
+        }
+
         return result.rowCount;
     }
 
     // 6. 管理员删除学生（事务：清理关联数据）
-    static async deleteStudent(id: string) {
+    static async deleteStudent(operatorId: string, id: string) {
         const client = await pool.connect();
         try {
             await client.query('BEGIN');
@@ -152,6 +180,9 @@ export class StudentService {
             await client.query(`DELETE FROM application WHERE applicant_student_id = $1`, [id]);
             await client.query(`DELETE FROM student WHERE id = $1`, [id]);
             await client.query(`DELETE FROM syst_user WHERE id = $1`, [id]);
+
+            // 审计日志（先记再提交，确保只有提交成功才留痕）
+            await writeAuditLog(operatorId, '删除学生', 'student', id, '');
 
             await client.query('COMMIT');
             return true;
