@@ -6,6 +6,7 @@ import authRoutes from './routes/auth';
 import processRoutes from './routes/process';
 import applicationRoutes from './routes/application';
 import knowledgeRoutes from './routes/knowledge';
+import studentRoutes from './routes/student';
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/process', processRoutes);
 app.use('/api/applications', applicationRoutes);
 app.use('/api/knowledge', knowledgeRoutes);
+app.use('/api/students', studentRoutes);
 
 app.listen(3000, () => {
     console.log('TS 后端服务器已启动，监听地址: http://localhost:3000');

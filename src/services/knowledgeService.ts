@@ -1,6 +1,58 @@
 import { pool } from '../db';
 
 export class KnowledgeService {
+
+    // --- 管理端 CRUD ---
+
+    // 获取知识库全部政策列表
+    static async getAllPolicies() {
+        const result = await pool.query(
+            `SELECT * FROM policy_knowledge ORDER BY id DESC`
+        );
+        return result.rows;
+    }
+
+    // 获取单条政策
+    static async getPolicyById(id: string) {
+        const result = await pool.query(
+            `SELECT * FROM policy_knowledge WHERE id = $1`, [id]
+        );
+        return result.rows[0] || null;
+    }
+
+    // 新增政策
+    static async createPolicy(title: string, content: string, tags: string) {
+        const id = `pk_${Date.now()}`;
+        const sql = `
+            INSERT INTO policy_knowledge (id, title, content, tags)
+            VALUES ($1, $2, $3, $4)
+            RETURNING *
+        `;
+        const result = await pool.query(sql, [id, title, content, tags || '']);
+        return result.rows[0];
+    }
+
+    // 修改政策
+    static async updatePolicy(id: string, title: string, content: string, tags: string) {
+        const sql = `
+            UPDATE policy_knowledge
+            SET title = $1, content = $2, tags = $3
+            WHERE id = $4
+        `;
+        const result = await pool.query(sql, [title, content, tags || '', id]);
+        return result.rowCount;
+    }
+
+    // 删除政策
+    static async deletePolicy(id: string) {
+        const result = await pool.query(
+            `DELETE FROM policy_knowledge WHERE id = $1`, [id]
+        );
+        return result.rowCount;
+    }
+
+    // --- 学生提问匹配 ---
+
     // 核心算法：提取学生问句特征，去金仓政策库里进行关键词密度与标签权重打分
     static async askQuestion(question: string) {
         // 1. 捞出库里所有政策
