@@ -1,0 +1,97 @@
+<navigation-bar title="党团事务" back="{{true}}" background="#ffffff" color="#333333"></navigation-bar>
+
+<scroll-view class="process-page" scroll-y enhanced show-scrollbar="{{false}}">
+  <!-- 流程类型选择 -->
+  <view class="process-type-bar">
+    <view
+      wx:for="{{processTypes}}"
+      wx:key="value"
+      class="type-tab {{activeType === item.value ? 'active' : ''}}"
+      bindtap="onTypeChange"
+      data-type="{{item.value}}"
+    >{{item.label}}</view>
+  </view>
+
+  <!-- 当前状态卡片 -->
+  <view class="status-card card">
+    <view class="status-header">
+      <view class="status-label">当前阶段</view>
+      <status-tag type="primary">{{currentStageName}}</status-tag>
+    </view>
+    <view class="status-desc">{{currentStageDesc}}</view>
+
+    <!-- 整体进度条 -->
+    <view class="progress-section">
+      <view class="progress-label">整体进度 {{completedCount}}/{{totalCount}}</view>
+      <view class="progress-bar">
+        <view class="progress-fill" style="width: {{progressPercent}}%"></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 流程时间线 -->
+  <view class="timeline-section">
+    <view class="section-title">流程进度</view>
+
+    <view class="timeline">
+      <view
+        wx:for="{{stages}}"
+        wx:key="id"
+        class="timeline-item {{item.isCurrent ? 'current' : ''}} {{item.isCompleted ? 'completed' : ''}}"
+      >
+        <view class="timeline-line">
+          <view class="line-dot {{item.isCompleted || item.isCurrent ? 'active' : ''}}">
+            <text wx:if="{{item.isCompleted}}">✓</text>
+            <text wx:elif="{{item.isCurrent}}">●</text>
+            <text wx:else>{{index + 1}}</text>
+          </view>
+          <view class="line-connector {{item.isCompleted ? 'active' : ''}}" wx:if="{{index < stages.length - 1}}"></view>
+        </view>
+        <view class="timeline-content">
+          <view class="timeline-title">
+            <text>{{item.name}}</text>
+            <status-tag
+              wx:if="{{item.isCurrent}}"
+              type="primary"
+              size="small"
+            >进行中</status-tag>
+            <status-tag
+              wx:elif="{{item.isCompleted}}"
+              type="success"
+              size="small"
+            >已完成</status-tag>
+          </view>
+          <view class="timeline-desc">{{item.description}}</view>
+          <view class="timeline-time" wx:if="{{item.completedAt}}">完成时间：{{item.completedAt}}</view>
+
+          <!-- 材料清单 -->
+          <view class="materials" wx:if="{{item.materials.length > 0 && item.isCurrent}}">
+            <view class="materials-title">待提交材料：</view>
+            <view class="material-item" wx:for="{{item.materials}}" wx:key="*this" wx:for-item="m">
+              <text class="material-dot">·</text>
+              <text>{{m}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 历史记录 -->
+  <view class="records-section" wx:if="{{records.length > 0}}">
+    <view class="section-title">历史记录</view>
+    <view class="record-list">
+      <view class="record-item" wx:for="{{records}}" wx:key="id">
+        <view class="record-header">
+          <status-tag type="gray" size="small">{{item.processType}} · {{item.actionType}}</status-tag>
+          <text class="record-time">{{item.createdAt}}</text>
+        </view>
+        <view class="record-action">{{item.actionType}}</view>
+        <view class="record-remark" wx:if="{{item.comment}}">备注：{{item.comment}}</view>
+        <view class="record-operator">操作人：{{item.operatorId}}</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="safe-bottom" style="height: 40rpx;"></view>
+</scroll-view>
