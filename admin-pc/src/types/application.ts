@@ -27,5 +27,5 @@ export interface ApprovalLog {
   createdAt: number            // 审批时间戳 (毫秒)
 }
 
-/** 审批动作 — 严格对齐 DB: '通过' | '驳回' | '要求补交' */
-export type ApprovalAction = '通过' | '驳回' | '要求补交'
+/** 审批动作 — 严格对齐后端: '通过' | '驳回' | '补交' */
+export type ApprovalAction = '通过' | '驳回' | '补交'

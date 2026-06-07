@@ -76,7 +76,8 @@ function formatTime(ts: number) {
       </el-table-column>
       <el-table-column label="操作" width="100">
         <template #default="{ row }">
-          <el-button size="small" type="primary" @click="showDetail(row)">审批</el-button>
+          <el-button v-if="row.status !== '通过' && row.status !== '驳回'" size="small" type="primary" @click="showDetail(row)">审批</el-button>
+          <span v-else style="color:#909399;font-size:13px">已完结</span>
         </template>
       </el-table-column>
     </el-table>
@@ -106,7 +107,7 @@ function formatTime(ts: number) {
         <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
           <el-button type="success" @click="doApproval('通过')">通过</el-button>
           <el-button type="danger" @click="doApproval('驳回')">驳回</el-button>
-          <el-button type="warning" @click="doApproval('要求补交')">要求补交</el-button>
+          <el-button type="warning" @click="doApproval('补交')">要求补交</el-button>
         </div>
       </template>
     </el-dialog>

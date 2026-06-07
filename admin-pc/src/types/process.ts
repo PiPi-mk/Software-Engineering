@@ -28,4 +28,4 @@ export interface ProcessStage {
 export type SystemRole = 'admin' | 'student'
 
 // ========== 审批动作 ==========
-export type ApprovalAction = '通过' | '驳回' | '要求补交'
+export type ApprovalAction = '通过' | '驳回' | '补交'
