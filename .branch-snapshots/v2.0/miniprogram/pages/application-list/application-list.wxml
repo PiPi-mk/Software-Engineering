@@ -1,0 +1,38 @@
+<navigation-bar title="我的申请" back="{{true}}" background="#ffffff" color="#333333"></navigation-bar>
+
+<scroll-view class="list-page" scroll-y enhanced show-scrollbar="{{false}}">
+  <!-- 状态筛选 -->
+  <view class="status-filter">
+    <view
+      wx:for="{{statusTabs}}"
+      wx:key="value"
+      class="filter-tab {{activeStatus === item.value ? 'active' : ''}}"
+      bindtap="onStatusChange"
+      data-status="{{item.value}}"
+    >{{item.label}}</view>
+  </view>
+
+  <!-- 申请列表 -->
+  <view wx:if="{{applications.length > 0}}">
+    <view
+      wx:for="{{applications}}"
+      wx:key="id"
+      class="app-card"
+      bindtap="goToDetail"
+      data-id="{{item.id}}"
+    >
+      <view class="app-header">
+        <view class="app-title">{{item.typeLabel || item.type}}</view>
+        <status-tag type="{{item.status === '待审批' ? 'warning' : item.status === '通过' ? 'success' : item.status === '驳回' ? 'danger' : 'gray'}}" size="small">{{item.statusLabel || item.status}}</status-tag>
+      </view>
+      <view class="app-desc">{{item.formData.title}}</view>
+      <view class="app-time">{{item.createdAt}}</view>
+    </view>
+  </view>
+
+  <view class="empty-state" wx:else>
+    <view class="icon">📋</view>
+    <text>暂无申请记录</text>
+    <button class="btn btn-primary btn-sm mt-24" bindtap="goToCreate">去提交申请</button>
+  </view>
+</scroll-view>

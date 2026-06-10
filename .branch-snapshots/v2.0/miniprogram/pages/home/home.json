@@ -1,0 +1,7 @@
+{
+  "usingComponents": {
+    "navigation-bar": "/components/navigation-bar/navigation-bar",
+    "notice-card": "/components/notice-card/notice-card",
+    "status-tag": "/components/status-tag/status-tag"
+  }
+}

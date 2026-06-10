@@ -1,0 +1,69 @@
+<navigation-bar title="提交申请" back="{{true}}" background="#ffffff" color="#333333"></navigation-bar>
+
+<scroll-view class="create-page" scroll-y enhanced show-scrollbar="{{false}}">
+  <view class="form-container">
+    <!-- 申请类型 -->
+    <view class="form-group">
+      <view class="form-label">申请类型 <text class="required">*</text></view>
+      <picker mode="selector" range="{{typeLabels}}" bindchange="onTypeChange" value="{{typeIndex}}">
+        <view class="picker-value {{typeIndex === -1 ? 'placeholder' : ''}}">
+          {{typeIndex === -1 ? '请选择申请类型' : typeLabels[typeIndex]}}
+        </view>
+      </picker>
+    </view>
+
+    <!-- 申请标题 -->
+    <view class="form-group">
+      <view class="form-label">申请标题 <text class="required">*</text></view>
+      <input class="form-input" placeholder="请输入申请标题" value="{{title}}" bindinput="onTitleInput" maxlength="50"/>
+    </view>
+
+    <!-- 申请原因/说明 -->
+    <view class="form-group">
+      <view class="form-label">申请说明 <text class="required">*</text></view>
+      <textarea class="form-textarea" placeholder="请详细说明申请原因..." value="{{reason}}" bindinput="onReasonInput" maxlength="500" auto-height/>
+      <view class="char-count">{{reason.length}}/500</view>
+    </view>
+
+    <!-- 时间选择（请假类） -->
+    <view class="form-group" wx:if="{{showDateFields}}">
+      <view class="form-label">开始时间 <text class="required">*</text></view>
+      <picker mode="date" value="{{startDate}}" bindchange="onStartDateChange">
+        <view class="picker-value {{!startDate ? 'placeholder' : ''}}">
+          {{startDate || '请选择开始日期'}}
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-group" wx:if="{{showDateFields}}">
+      <view class="form-label">结束时间 <text class="required">*</text></view>
+      <picker mode="date" value="{{endDate}}" bindchange="onEndDateChange">
+        <view class="picker-value {{!endDate ? 'placeholder' : ''}}">
+          {{endDate || '请选择结束日期'}}
+        </view>
+      </picker>
+    </view>
+
+    <!-- 附件上传 -->
+    <view class="form-group">
+      <view class="form-label">附件材料</view>
+      <view class="upload-area" bindtap="uploadAttachment">
+        <text class="upload-icon">📎</text>
+        <text class="upload-text">点击上传附件（选填）</text>
+      </view>
+      <view class="file-list" wx:if="{{attachments.length > 0}}">
+        <view class="file-item" wx:for="{{attachments}}" wx:key="*this">
+          <text>📄 {{item}}</text>
+          <text class="file-remove" bindtap="removeFile" data-index="{{index}}">✕</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 提交按钮 -->
+    <view class="btn-area">
+      <button class="submit-btn" bindtap="handleSubmit" disabled="{{submitting}}">
+        {{submitting ? '提交中...' : '提交申请'}}
+      </button>
+    </view>
+  </view>
+</scroll-view>

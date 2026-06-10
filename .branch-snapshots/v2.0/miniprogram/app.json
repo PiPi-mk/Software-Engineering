@@ -1,0 +1,69 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/home/home",
+    "pages/service/service",
+    "pages/notices/notices",
+    "pages/notice-detail/notice-detail",
+    "pages/knowledge/knowledge",
+    "pages/knowledge-detail/knowledge-detail",
+    "pages/template-download/template-download",
+    "pages/process/process",
+    "pages/application-create/application-create",
+    "pages/application-list/application-list",
+    "pages/application-detail/application-detail",
+    "pages/profile/profile"
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationStyle": "custom"
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#999999",
+    "selectedColor": "#1a6eff",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "首页",
+        "iconPath": "images/tab-home.png",
+        "selectedIconPath": "images/tab-home-active.png"
+      },
+      {
+        "pagePath": "pages/service/service",
+        "text": "服务",
+        "iconPath": "images/tab-service.png",
+        "selectedIconPath": "images/tab-service-active.png"
+      },
+      {
+        "pagePath": "pages/notices/notices",
+        "text": "通知",
+        "iconPath": "images/tab-notice.png",
+        "selectedIconPath": "images/tab-notice-active.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的",
+        "iconPath": "images/tab-profile.png",
+        "selectedIconPath": "images/tab-profile-active.png"
+      }
+    ]
+  },
+  "usingComponents": {
+    "navigation-bar": "/components/navigation-bar/navigation-bar"
+  },
+  "style": "v2",
+  "rendererOptions": {
+    "skyline": {
+      "defaultDisplayBlock": true,
+      "disableABTest": true,
+      "sdkVersionBegin": "3.0.0",
+      "sdkVersionEnd": "15.255.255"
+    }
+  },
+  "componentFramework": "glass-easel",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

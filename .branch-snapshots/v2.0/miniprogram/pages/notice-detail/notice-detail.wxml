@@ -1,0 +1,29 @@
+<navigation-bar title="通知详情" back="{{true}}" background="#ffffff" color="#333333"></navigation-bar>
+
+<scroll-view class="detail-page" scroll-y enhanced show-scrollbar="{{false}}">
+  <view class="detail-container" wx:if="{{notice}}">
+    <view class="detail-title">{{notice.title}}</view>
+
+    <view class="detail-meta">
+      <view class="meta-item">
+        <text class="meta-label">发布者：</text>
+        <text>{{notice.publisherId}}</text>
+      </view>
+      <view class="meta-item">
+        <text class="meta-label">发布时间：</text>
+        <text>{{notice.publishedAt}}</text>
+      </view>
+    </view>
+
+    <view class="detail-content">
+      <text>{{notice.content || '暂无详细内容'}}</text>
+    </view>
+  </view>
+
+  <view class="empty-state" wx:if="{{error}}">
+    <text>加载失败</text>
+    <button class="btn btn-primary btn-sm mt-24" bindtap="retry">点击重试</button>
+  </view>
+
+  <view class="safe-bottom" style="height: 40rpx;"></view>
+</scroll-view>

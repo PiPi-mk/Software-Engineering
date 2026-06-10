@@ -1,0 +1,12 @@
+function formatTs(ts) {
+  if (!ts) return ''
+  var d = getDate(ts)
+  var y = d.getFullYear()
+  var m = '' + (d.getMonth() + 1)
+  var day = '' + d.getDate()
+  if (m.length === 1) m = '0' + m
+  if (day.length === 1) day = '0' + day
+  return y + '-' + m + '-' + day
+}
+
+module.exports = { formatTs: formatTs }

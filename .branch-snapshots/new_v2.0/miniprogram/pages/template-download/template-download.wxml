@@ -1,0 +1,18 @@
+<navigation-bar title="模板下载" back="{{true}}" background="#ffffff" color="#333333"></navigation-bar>
+
+<scroll-view class="page" scroll-y enhanced show-scrollbar="{{false}}">
+  <view class="intro">
+    <text>常用Word/Excel模板文件，点击下载</text>
+  </view>
+
+  <view wx:if="{{templates.length > 0}}">
+    <view wx:for="{{templates}}" wx:key="id" class="tpl-item" bindtap="download" data-item="{{item}}">
+      <view class="tpl-icon">📥</view>
+      <view class="tpl-info">
+        <view class="tpl-name">{{item.name}}</view>
+        <view class="tpl-meta">{{item.fileType}} · {{item.fileSize}} · 下载 {{item.downloadCount}} 次</view>
+      </view>
+      <view class="tpl-btn">下载</view>
+    </view>
+  </view>
+</scroll-view>
