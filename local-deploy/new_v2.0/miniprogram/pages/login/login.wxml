@@ -1,0 +1,53 @@
+<navigation-bar title="学院综合服务平台" back="{{false}}" background="#1a6eff" color="#ffffff"></navigation-bar>
+
+<view class="login-page">
+  <view class="login-header">
+    <view class="logo-area">
+      <view class="logo-icon">🎓</view>
+    </view>
+    <view class="app-title">学院学生综合服务</view>
+    <view class="app-subtitle">与党团管理平台</view>
+  </view>
+
+  <view class="login-body">
+    <view class="login-card">
+      <view class="form-title">账号登录</view>
+
+      <view class="form-item">
+        <view class="form-label">用户名</view>
+        <input
+          class="form-input"
+          placeholder="请输入用户名"
+          value="{{username}}"
+          bindinput="onUsernameInput"
+        />
+      </view>
+
+      <view class="form-item">
+        <view class="form-label">密码</view>
+        <input
+          class="form-input"
+          placeholder="请输入密码"
+          password="{{true}}"
+          value="{{password}}"
+          bindinput="onPasswordInput"
+        />
+      </view>
+
+      <button
+        class="login-btn active"
+        bindtap="handleLogin"
+        disabled="{{loading}}"
+      >
+        {{loading ? '登录中...' : '登录'}}
+      </button>
+
+      <view class="test-accounts">
+        <view class="test-title">测试账号</view>
+        <view class="test-item">管理员：admin / admin123</view>
+        <view class="test-item">学生：student1 / student123</view>
+        <view class="test-item">学生：student2 / student123</view>
+      </view>
+    </view>
+  </view>
+</view>

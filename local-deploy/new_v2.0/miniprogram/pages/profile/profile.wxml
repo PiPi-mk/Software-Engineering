@@ -1,0 +1,49 @@
+<navigation-bar title="我的" back="{{false}}" background="#1a6eff" color="#ffffff"></navigation-bar>
+
+<scroll-view class="profile-page" scroll-y enhanced show-scrollbar="{{false}}">
+  <!-- 个人信息卡片 -->
+  <view class="profile-header">
+    <view class="profile-bg"></view>
+    <view class="profile-info">
+      <view class="avatar">{{avatarText}}</view>
+      <view class="name">{{username}}</view>
+      <view class="role-tag">
+        <view class="tag tag-blue">{{roleLabel}}</view>
+      </view>
+      <view class="class-info" wx:if="{{className}}">{{className}}</view>
+    </view>
+  </view>
+
+  <!-- 功能菜单 -->
+  <view class="menu-section">
+    <view class="menu-group">
+      <view class="menu-item" bindtap="goToApplications">
+        <view class="menu-icon">📋</view>
+        <view class="menu-text">我的申请</view>
+        <view class="menu-arrow">></view>
+      </view>
+      <view class="menu-item" bindtap="goToProcess">
+        <view class="menu-icon">🏛</view>
+        <view class="menu-text">党团进度</view>
+        <view class="menu-arrow">></view>
+      </view>
+      <view class="menu-item" bindtap="goToKnowledge">
+        <view class="menu-icon">📖</view>
+        <view class="menu-text">政策知识库</view>
+        <view class="menu-arrow">></view>
+      </view>
+      <view class="menu-item" bindtap="goToAbout">
+        <view class="menu-icon">ℹ</view>
+        <view class="menu-text">关于</view>
+        <view class="menu-arrow">></view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 退出登录 -->
+  <view class="logout-section">
+    <button class="logout-btn" bindtap="handleLogout">退出登录</button>
+  </view>
+
+  <view class="safe-bottom" style="height: 40rpx;"></view>
+</scroll-view>

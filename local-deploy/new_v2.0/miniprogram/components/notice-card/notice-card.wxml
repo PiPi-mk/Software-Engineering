@@ -1,0 +1,9 @@
+<wxs src="../../utils/time.wxs" module="t" />
+
+<view class="notice-card {{item.read ? 'read' : ''}}">
+  <view class="notice-title">
+    <view class="unread-dot" wx:if="{{!item.read}}"></view>
+    <text>{{item.title}}</text>
+  </view>
+  <view class="notice-time">{{t.formatTs(item.publishedAt)}}</view>
+</view>
